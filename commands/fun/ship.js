@@ -3,21 +3,24 @@ const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 module.exports = {
   category: 'Fun',
   adminOnly: false,
-  usage: '/ship <user1> <user2>',
+  usage: '/ship <user1> <user2> [private]',
   data: new SlashCommandBuilder()
     .setName('ship')
     .setDescription('Ship two users together')
-    .addUserOption(opt => 
+    .addUserOption(opt =>
       opt.setName('user1').setDescription('First person').setRequired(true))
-    .addUserOption(opt => 
-      opt.setName('user2').setDescription('Second person').setRequired(true)),
+    .addUserOption(opt =>
+      opt.setName('user2').setDescription('Second person').setRequired(true))
+    .addBooleanOption(opt =>
+      opt.setName('private').setDescription('Show result only to you (true/false)')),
 
   async execute(interaction) {
     const user1 = interaction.options.getUser('user1');
     const user2 = interaction.options.getUser('user2');
+    const isPrivate = interaction.options.getBoolean('private') ?? false;
 
     if (user1.id === user2.id) {
-      return interaction.reply({ content: '❌ You can’t ship someone with themselves!', flags: 64 });
+      return interaction.reply({ content: '❌ You can’t ship someone with themselves!', ephemeral: true });
     }
 
     const shipName =
@@ -45,6 +48,6 @@ module.exports = {
       .setImage(user2.displayAvatarURL({ dynamic: true }))
       .setFooter({ text: `${user1.username} 💞 ${user2.username}` });
 
-    await interaction.reply({ embeds: [embed], flags: 64 });
+    await interaction.reply({ embeds: [embed], ephemeral: isPrivate });
   }
 };
